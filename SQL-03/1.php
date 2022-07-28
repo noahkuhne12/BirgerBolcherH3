@@ -1,29 +1,86 @@
 <?php
-    $sql = "SELECT product.ID, product.Name, product.Weight, product.CommodityPrice,
+    if($_GET["q-type"] == "combined")
+    {
+        $query = '%'.$_GET["search"].'%';
+    }
+    else if($_GET["q-type"] == "start")
+    {
+        $query = $_GET["search"].'%';
+    }
+    else
+    {
+        $query = '%';
+    }
+    $sql = "SELECT * FROM colour;";
+    $stat = $conn->prepare($sql);
+    $stat->execute();
+    $storColour = $stat->get_result();
+
+    if($_GET["colour"] != "Alle" && !empty($_GET["colour"]))
+    {
+        $sql = "SELECT product.ID, product.Name, product.Weight, product.CommodityPrice,
         colour.Colour, tast_type.Tast, tast_strength.Strength, acidity_level.Acidity 
         FROM product 
         INNER JOIN tast_strength ON product.TastStrengthID = tast_strength.ID 
         INNER JOIN acidity_level ON product.AcidityLevelID = acidity_level.ID 
         INNER JOIN tast_type ON product.TastTypeID = tast_type.ID 
         INNER JOIN colour ON product.ColourID = colour.ID 
-        ORDER BY product.ID ASC;"
-    ;
-    $stat = $conn->prepare($sql);
+        WHERE product.Name LIKE ? AND colour.Colour = ?;";
+
+        $stat = $conn->prepare($sql);
+        $stat->bind_param("ss",$query, $_GET["Colour"]);
+    }
+    else
+    {
+        $sql = "SELECT product.ID, product.Name, product.Weight, product.CommodityPrice,
+        colour.Colour, tast_type.Tast, tast_strength.Strength, acidity_level.Acidity 
+        FROM product 
+        INNER JOIN tast_strength ON product.TastStrengthID = tast_strength.ID 
+        INNER JOIN acidity_level ON product.AcidityLevelID = acidity_level.ID 
+        INNER JOIN tast_type ON product.TastTypeID = tast_type.ID 
+        INNER JOIN colour ON product.ColourID = colour.ID 
+        WHERE product.Name LIKE ?;";
+        $stat = $conn->prepare($sql);
+        $stat->bind_param("s",$query);
+    }  
+    
     $stat->execute();
     $result = $stat->get_result();
 ?>
-<style>
-    .Sql3Opg1{
-        display: none;
-    }
-</style>
+
 
 <div class="card border-secondary mb-3">
     <div class="card-header">
-        <h2>Opg. 1 - Lav en knap eller et link med teksten “Vis alle”, der viser alle bolcher, når der klikkes på det.</h2>
-        <button onclick="$('.Sql3Opg1').show()" type="button" class="btn btn-primary">Vis alle</button>
+        <a class="btn btn-primary" href="index.php?SQL=03" role="button">vis alle</a>
+        <br></br>
+        <form>
+            <input type="hidden" name="SQL" value="03" />
+            <div class="input-group mb-3">
+                <select class="form-select" name="colour">
+                <option<?= $_GET["colour"] == "Alle" ? ' selected' : '' ?>>Alle</option>
+                <?php
+                    while($row = $storColour->fetch_assoc())
+                    {   
+                ?>
+                    <option<?= $_GET["Colour"] == $row["Colour"] ? ' selected' : '' ?>><?=$row["Colour"]?></option>
+                <?php
+                    }
+                ?>
+                </select>
+                <select class="form-select" name="q-type">
+                    <option value="combined"<?= $_GET["q-type"] == "combined" ? ' selected' : '' ?>>sammenhængende bogstaver</option>
+                    <option value="start"<?= $_GET["q-type"] == "start" ? ' selected' : '' ?>>Begyndelses bogstav</option>
+                </select>
+                <input name="search" type="text" class="form-control" aria-label="Text input with dropdown button" placeholder="søg" value="<?= strip_tags($_GET['search']) ?>">
+                <button class="btn btn-outline-secondary" type="submit" id="butten-search">søg</button>
+            </div>
+        </form>
     </div>
-    <div class="table-responsive Sql3Opg1">
+    <div class="table-responsive">
+        <?php
+            if($result->num_rows > 0){
+        ?>
+
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
@@ -56,13 +113,19 @@
                 ?>
             </tbody>
         </table>
+        <?php
+            }
+            else
+        {
+        ?>
+                <h3>der er ingen bolcer med den kobination</h3>
+        <?php    
+        }
+        ?>
     </div>
-    <div  class="card-footer bg-transparent border-success Sql3Opg1">
+    <div  class="card-footer bg-transparent border-success">
         <h3>
             <?=$sql?>
         </h3>
     </div>
 </div>
-
-
-
