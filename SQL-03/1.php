@@ -16,7 +16,7 @@
     $stat->execute();
     $storColour = $stat->get_result();
 
-    if($_GET["colour"] != "Alle" && !empty($_GET["colour"]))
+    if($_GET["Colour"] != "Alle" && !empty($_GET["Colour"]))
     {
         $sql = "SELECT product.ID, product.Name, product.Weight, product.CommodityPrice,
         colour.Colour, tast_type.Tast, tast_strength.Strength, acidity_level.Acidity 
@@ -56,8 +56,8 @@
         <form>
             <input type="hidden" name="SQL" value="03" />
             <div class="input-group mb-3">
-                <select class="form-select" name="colour">
-                <option<?= $_GET["colour"] == "Alle" ? ' selected' : '' ?>>Alle</option>
+                <select class="form-select" name="Colour">
+                <option<?= $_GET["Colour"] == "Alle" ? ' selected' : '' ?>>Alle</option>
                 <?php
                     while($row = $storColour->fetch_assoc())
                     {   
@@ -78,6 +78,7 @@
     </div>
     <div class="table-responsive">
         <?php
+    print_r($result);
             if($result->num_rows > 0){
         ?>
 
@@ -119,7 +120,9 @@
         {
         ?>
                 <h3>der er ingen bolcer med den kobination</h3>
+                
         <?php    
+           
         }
         ?>
     </div>
