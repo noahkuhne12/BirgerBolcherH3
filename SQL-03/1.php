@@ -78,7 +78,6 @@
     </div>
     <div class="table-responsive">
         <?php
-    print_r($result);
             if($result->num_rows > 0){
         ?>
 
